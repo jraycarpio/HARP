@@ -15,10 +15,14 @@
 #include <Wire.h>
 #include <SparkFun_MS5803_I2C.h>
 #include <Adafruit_BMP085.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BNO055.h>
+#include <utility/imumaths.h>
 
 // Declare sensors
 Adafruit_BMP085 bmp;
 MS5803 sensor(ADDRESS_HIGH); // ADDRESS_HIGH = 0x76 (for ADDRESS_LOW = 0x77)
+Adafruit_BNO055 bno = Adafruit_BNO055(55);
 
 // ______________For MS5803-14BA: create variables to store results_________________________
 float temperature_c, temperature_f;
@@ -51,15 +55,30 @@ double altitude(double P, double P0)
 void setup() {
   
   Serial.begin(9600);
-  // MS5803-14BA setup
+  // MS5803-14BA
   sensor.reset();
   sensor.begin();
   pressure_baseline = sensor.getPressure(ADC_4096);
 
-  // BMP180 setup
+  // BMP180
   if (!bmp.begin()) {
   Serial.println("Could not find a valid BMP085 sensor, check wiring!");
   while (1) {}}
+  
+  // BNO055
+  Serial.println("Orientation Sensor Test"); Serial.println("");
+  
+  /* Initialise the sensor */
+  if(!bno.begin())
+  {
+    /* There was a problem detecting the BNO055 ... check your connections */
+    Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
+    while(1);
+  }
+  
+  delay(1000);
+    
+  bno.setExtCrystalUse(true);
     
 
 }
@@ -135,6 +154,19 @@ void loop() {
   Serial.println(" meters");
     
   Serial.println();
+  
+  // BNO055 ------------------------------------------------
+  sensors_event_t event; 
+  bno.getEvent(&event);
+  
+  /* Display the floating point data */
+  Serial.print("X: ");
+  Serial.print(event.orientation.x, 4);
+  Serial.print("\tY: ");
+  Serial.print(event.orientation.y, 4);
+  Serial.print("\tZ: ");
+  Serial.print(event.orientation.z, 4);
+  Serial.println("");
 
   delay(1000);
 }
