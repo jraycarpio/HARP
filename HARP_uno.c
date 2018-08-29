@@ -156,7 +156,7 @@ void loop() {
   Serial.println();
   
   // BNO055 ------------------------------------------------
-  Serial.println("BNO055 -------------------------);
+  Serial.println("BNO055 -------------------------");
   sensors_event_t event; 
   bno.getEvent(&event);
   
@@ -168,6 +168,5 @@ void loop() {
   Serial.print("\tZ: ");
   Serial.print(event.orientation.z, 4);
   Serial.println("");
-
   delay(1000);
 }
