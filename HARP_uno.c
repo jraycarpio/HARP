@@ -156,6 +156,7 @@ void loop() {
   Serial.println();
   
   // BNO055 ------------------------------------------------
+  Serial.println("BNO055 -------------------------);
   sensors_event_t event; 
   bno.getEvent(&event);
   
