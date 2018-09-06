@@ -1,4 +1,5 @@
 /*
+ * 
  * HARP UNO AVIONICS
  * SENSOR SUITE
  * 
@@ -9,12 +10,12 @@
  * San Jose State University
  * Aerospace Engineering 
  * Computer Science
+ * 
  */
 
 // Include required libraries
 #include <Wire.h>
 #include <SparkFun_MS5803_I2C.h>
-#include <Adafruit_BMP085.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
@@ -23,11 +24,11 @@
 
 // Setup file for datalogging
 File hdata; // HARP data object
+File myFile;
 int pinCS = 10; // CS pin, pin 10 on arduino
 
 
 // Declare sensors
-Adafruit_BMP085 bmp;
 MS5803 sensor(ADDRESS_HIGH); // ADDRESS_HIGH = 0x76 (for ADDRESS_LOW = 0x77)
 Adafruit_BNO055 bno = Adafruit_BNO055(55);
 
@@ -70,6 +71,7 @@ void setup() {
   Serial.begin(9600);
   
   /************* SD Card initialization ************/
+  pinMode(pinCS, OUTPUT);
   if (SD.begin())
   {
     Serial.println("SD card is ready to use.");
@@ -77,7 +79,36 @@ void setup() {
   else
   {
     Serial.println("SD card initialization failed.");
-    return;
+    while(1);
+  }
+
+  //////////////////
+  myFile = SD.open("hello2.txt", FILE_WRITE);
+  
+  // if the file opened okay, write to it:
+  if (myFile) {
+    Serial.println("Writing to file...");
+    // Write to file
+    myFile.println("Hello2123123123 - DH");
+    myFile.close(); // close the file
+    Serial.println("Done.");
+  }
+  // if the file didn't open, print an error:
+  else {
+    Serial.println("error opening file");
+  }
+  // Reading the file
+  myFile = SD.open("hello2.txt");
+  if (myFile) {
+    Serial.println("Read:");
+    // Reading the whole file
+    while (myFile.available()) {
+      Serial.write(myFile.read());
+   }
+    myFile.close();
+  }
+  else {
+    Serial.println("error opening test.txt");
   }
   
   /************ End SD card initialization ************/
@@ -86,13 +117,8 @@ void setup() {
   sensor.reset();
   sensor.begin();
   pressure_baseline = sensor.getPressure(ADC_4096);
-
-  // BMP180
-  if (!bmp.begin()) {
-  Serial.println("Could not find a valid BMP085 sensor, check wiring!");
-  while (1) {}}
   
-  /* Initialise the sensor */
+  // BNO055
   if(!bno.begin())
   {
     /* There was a problem detecting the BNO055 ... check your connections */
@@ -162,35 +188,6 @@ void loop() {
 
   hdata.println();
 
-  // BMP180 ---------------------------------------------------
-  hdata.println("BMP180 -------------");
-  hdata.print("Temperature = ");
-  hdata.print(bmp.readTemperature());
-  hdata.println(" *C");
-    
-  hdata.print("Pressure = ");
-  hdata.print(bmp.readPressure());
-  hdata.println(" Pa");
-    
-  // Calculate altitude assuming 'standard' barometric
-  // pressure of 1013.25 millibar = 101325 Pascal
-  hdata.print("Altitude = ");
-  hdata.print(bmp.readAltitude());
-  hdata.println(" meters");
-
-  hdata.print("Pressure at sealevel (calculated) = ");
-  hdata.print(bmp.readSealevelPressure());
-  hdata.println(" Pa");
-
-  // you can get a more precise measurement of altitude
-  // if you know the current sea level pressure which will
-  // vary with weather and such. If it is 1015 millibars
-  // that is equal to 101500 Pascals.
-  hdata.print("Real altitude = ");
-  hdata.print(bmp.readAltitude(101500));
-  hdata.println(" meters");
-    
-  hdata.println();
   
   // BNO055 ------------------------------------------------
   hdata.println("BNO055 -------------------------");
@@ -231,12 +228,14 @@ void loop() {
   }
   
   // Print out raw X,Y,Z accelerometer readings
+  hdata.println("RAW");
   hdata.print("X: "); hdata.println(rawX);
   hdata.print("Y: "); hdata.println(rawY);
   hdata.print("Z: "); hdata.println(rawZ);
   hdata.println();
   
   // Print out scaled X,Y,Z accelerometer readings
+  hdata.println("Scaled measurements");
   hdata.print("X: "); hdata.print(scaledX); hdata.println(" g");
   hdata.print("Y: "); hdata.print(scaledY); hdata.println(" g");
   hdata.print("Z: "); hdata.print(scaledZ); hdata.println(" g");
@@ -244,8 +243,13 @@ void loop() {
   
   delay(200); // Minimum delay of 2 milliseconds between sensor reads (500 Hz)
 
+  Serial.write(hdata.read());
   hdata.close();
-}
+  
+} // end loop
+
+
+
 
 float mapf(float x, float in_min, float in_max, float out_min, float out_max)
 {
