@@ -80,20 +80,6 @@ void setup() {
     return;
   }
   
-  // Create/open file
-  hdata = SD.open("harpdata.txt", FILE_WRITE);
-  
-  // Check if file opened correctly
-  if (hdata) {
-    Serial.println("harpdata.txt created..");
-    hdata.println("__________ HARP DATA [today's date & time] _________");
-  }
-  else {
-    Serial.println("failed to create harpdata.txt");
-    return;
-  }
-  
-  
   /************ End SD card initialization ************/
   
   // MS5803-14BA
@@ -122,6 +108,19 @@ void setup() {
 }
 
 void loop() {
+
+  // Create/open file
+  hdata = SD.open("harpdata.txt", FILE_WRITE);
+  
+  // Check if file opened correctly
+  if (hdata) {
+    Serial.println("harpdata.txt created..");
+    hdata.println("__________ HARP DATA [today's date & time] _________");
+  }
+  else {
+    Serial.println("failed to create harpdata.txt");
+    while(1);
+  }
 
   // Read temperature from the sensor in deg C. This operation takes about 
   temperature_c = sensor.getTemperature(CELSIUS, ADC_512);
@@ -232,18 +231,20 @@ void loop() {
   }
   
   // Print out raw X,Y,Z accelerometer readings
-  hdata.print("X: "); Serial.println(rawX);
-  hdata.print("Y: "); Serial.println(rawY);
-  hdata.print("Z: "); Serial.println(rawZ);
+  hdata.print("X: "); hdata.println(rawX);
+  hdata.print("Y: "); hdata.println(rawY);
+  hdata.print("Z: "); hdata.println(rawZ);
   hdata.println();
   
   // Print out scaled X,Y,Z accelerometer readings
-  hdata.print("X: "); Serial.print(scaledX); Serial.println(" g");
-  hdata.print("Y: "); Serial.print(scaledY); Serial.println(" g");
-  hdata.print("Z: "); Serial.print(scaledZ); Serial.println(" g");
+  hdata.print("X: "); hdata.print(scaledX); hdata.println(" g");
+  hdata.print("Y: "); hdata.print(scaledY); hdata.println(" g");
+  hdata.print("Z: "); hdata.print(scaledZ); hdata.println(" g");
   hdata.println();
   
   delay(200); // Minimum delay of 2 milliseconds between sensor reads (500 Hz)
+
+  hdata.close();
 }
 
 float mapf(float x, float in_min, float in_max, float out_min, float out_max)
