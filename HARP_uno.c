@@ -18,16 +18,24 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
+#include <SPI.h>
+#include <SD.h>
+
+// Setup file for datalogging
+File hdata; // HARP data object
+int pinCS = 10; // CS pin, pin 10 on arduino
+
 
 // Declare sensors
 Adafruit_BMP085 bmp;
 MS5803 sensor(ADDRESS_HIGH); // ADDRESS_HIGH = 0x76 (for ADDRESS_LOW = 0x77)
 Adafruit_BNO055 bno = Adafruit_BNO055(55);
 
-//ADXL sensor init
 
+// ADXL377 sensor init
 int scale = 200; // 3 (±3g) for ADXL337, 200 (±200g) for ADXL377
 boolean micro_is_5V = true;
+
 
 // ______________For MS5803-14BA: create variables to store results_________________________
 float temperature_c, temperature_f;
@@ -173,9 +181,10 @@ void loop() {
   Serial.print("\tZ: ");
   Serial.print(event.orientation.z, 4);
   Serial.println("");
-  delay(1000);
   
   //------------------------ADXL377-------------------------------------
+  Serial.println("ADXL377 -----------------------------");
+  
   // Get raw accelerometer data for each axis
   int rawX = analogRead(A0);
   int rawY = analogRead(A1);
