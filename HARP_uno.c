@@ -12,33 +12,25 @@
  * Computer Science
  * 
  */
-
-// Include required libraries
+ 
+#include <SPI.h>
+#include <SD.h>
 #include <Wire.h>
 #include <SparkFun_MS5803_I2C.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
-#include <SPI.h>
-#include <SD.h>
+
 
 // Setup file for datalogging
-File hdata; // HARP data object
 File myFile;
-int pinCS = 10; // CS pin, pin 10 on arduino
+int pinCS = 10; // Pin 10 on Arduino Uno
 
 
-// Declare sensors
-MS5803 sensor(ADDRESS_HIGH); // ADDRESS_HIGH = 0x76 (for ADDRESS_LOW = 0x77)
-Adafruit_BNO055 bno = Adafruit_BNO055(55);
 
+// _____________________MS5803-14BA_______________________________
+MS5803 sensor(ADDRESS_HIGH); 
 
-// ADXL377 sensor init
-int scale = 200; // 3 (±3g) for ADXL337, 200 (±200g) for ADXL377
-boolean micro_is_5V = true;
-
-
-// ______________For MS5803-14BA: create variables to store results_________________________
 float temperature_c, temperature_f;
 double pressure_abs, pressure_relative, altitude_delta, pressure_baseline;
 
@@ -62,43 +54,57 @@ double altitude(double P, double P0)
   return(44330.0*(1-pow(P/P0,1/5.255)));
 }
 
-// _______________________end MS5803-14BA_____________________________
+// ____________________end MS5803-14BA__________________________
 
 
+// _______________________BNO055_______________________________
+
+Adafruit_BNO055 bno = Adafruit_BNO055(55);
+
+// ______________________end BNO055_______________________________
+
+
+// _____________________ADXL377____________________________
+
+int scale = 200; // 3 (±3g) for ADXL337, 200 (±200g) for ADXL377
+boolean micro_is_5V = true;
+
+float mapf(float x, float in_min, float in_max, float out_min, float out_max)
+{
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
+// _____________________end ADXL377____________________________
 
 void setup() {
-  
+    
   Serial.begin(9600);
-  
-  /************* SD Card initialization ************/
   pinMode(pinCS, OUTPUT);
+  
+  // SD Card Initialization
   if (SD.begin())
   {
     Serial.println("SD card is ready to use.");
-  }
-  else
+  } else
   {
-    Serial.println("SD card initialization failed.");
-    while(1);
+    Serial.println("SD card initialization failed");
+    return;
   }
-
-  //////////////////
-  myFile = SD.open("hello2.txt", FILE_WRITE);
+  
+  // Create/Open file 
+  myFile = SD.open("harpdata.txt", FILE_WRITE);
   
   // if the file opened okay, write to it:
   if (myFile) {
     Serial.println("Writing to file...");
-    // Write to file
-    myFile.println("Hello2123123123 - DH");
-    myFile.close(); // close the file
-    Serial.println("Done.");
   }
   // if the file didn't open, print an error:
   else {
     Serial.println("error opening file");
+    while(1);
   }
   // Reading the file
-  myFile = SD.open("hello2.txt");
+  myFile = SD.open("harpdata.txt");
   if (myFile) {
     Serial.println("Read:");
     // Reading the whole file
@@ -111,13 +117,11 @@ void setup() {
     Serial.println("error opening test.txt");
   }
   
-  /************ End SD card initialization ************/
-  
   // MS5803-14BA
   sensor.reset();
   sensor.begin();
   pressure_baseline = sensor.getPressure(ADC_4096);
-  
+
   // BNO055
   if(!bno.begin())
   {
@@ -129,26 +133,13 @@ void setup() {
   delay(1000);
     
   bno.setExtCrystalUse(true);
-    
-
 }
-
 void loop() {
+  // empty
+  myFile = SD.open("harpdata.txt", FILE_WRITE);
 
-  // Create/open file
-  hdata = SD.open("harpdata.txt", FILE_WRITE);
-  
-  // Check if file opened correctly
-  if (hdata) {
-    Serial.println("harpdata.txt created..");
-    hdata.println("__________ HARP DATA [today's date & time] _________");
-  }
-  else {
-    Serial.println("failed to create harpdata.txt");
-    while(1);
-  }
+  /*______________ MS5803-14BA ________________*/
 
-  // Read temperature from the sensor in deg C. This operation takes about 
   temperature_c = sensor.getTemperature(CELSIUS, ADC_512);
   
   // Read temperature from the sensor in deg F. Converting
@@ -169,40 +160,55 @@ void loop() {
   // change in altitude based on the differences in pressure.   
   altitude_delta = altitude(pressure_abs , pressure_baseline);
   
-  // MS5803-14BA --------------------------------------------
-  hdata.println("MS5803-14BA -------------------------------");
-  hdata.print("Temperature C = ");
-  hdata.println(temperature_c);
+  // print data
+  myFile.println("MS5803-14BA -------------------------------");
+  myFile.print("Temperature C = ");
+  myFile.println(temperature_c);
+  //Serial.println(temperature_f);
   
-  hdata.print("Temperature F = ");
-  hdata.println(temperature_f);
+  myFile.print("Temperature F = ");
+  myFile.println(temperature_f);
   
-  hdata.print("Pressure abs (mbar)= ");
-  hdata.println(pressure_abs);
+  myFile.print("Pressure abs (mbar)= ");
+  myFile.println(pressure_abs);
    
-  hdata.print("Pressure relative (mbar)= ");
-  hdata.println(pressure_relative); 
+  myFile.print("Pressure relative (mbar)= ");
+  myFile.println(pressure_relative); 
   
-  //Serial.print("Altitude change (m) = ");
-  //Serial.println(altitude_delta); 
 
-  hdata.println();
+  myFile.println();
 
-  
-  // BNO055 ------------------------------------------------
-  hdata.println("BNO055 -------------------------");
+
+  /* ____________ end MS5803-14BA _____________*/
+ 
+  myFile.println();
+
+  /* _____________________ BNO055 ____________________*/
+  myFile.println("BNO055 -------------------------");
   sensors_event_t event; 
   bno.getEvent(&event);
   
-  /* Display the floating point data */
-  hdata.print("X: ");
-  hdata.print(event.orientation.x, 4);
-  hdata.print("\tY: ");
-  hdata.print(event.orientation.y, 4);
-  hdata.print("\tZ: ");
-  hdata.print(event.orientation.z, 4);
-  hdata.println("");
-  
+  myFile.print("X: ");
+  myFile.print(event.orientation.x, 4);
+  myFile.print("\tY: ");
+  myFile.print(event.orientation.y, 4);
+  myFile.print("\tZ: ");
+  myFile.print(event.orientation.z, 4);
+  myFile.println("");
+  /* _____________________end BNO055 ____________________*/
+
+
+  /* 
+   *  
+   *  commented this section out, still need to change all 
+   *  "hdata" to "myFile" and condense where possible
+   *  
+   *  as of right now with BNO055 and MS5803-14BA, still experiencing
+   *  some issues. 75% of dynamic memory is occupied. 62% of program
+   *  storage space is occupied.
+   *  
+   *  
+   *  
   //------------------------ADXL377-------------------------------------
   hdata.println("ADXL377 -----------------------------");
   
@@ -240,18 +246,8 @@ void loop() {
   hdata.print("Y: "); hdata.print(scaledY); hdata.println(" g");
   hdata.print("Z: "); hdata.print(scaledZ); hdata.println(" g");
   hdata.println();
+
+  */
   
-  delay(200); // Minimum delay of 2 milliseconds between sensor reads (500 Hz)
-
-  Serial.write(hdata.read());
-  hdata.close();
-  
-} // end loop
-
-
-
-
-float mapf(float x, float in_min, float in_max, float out_min, float out_max)
-{
-  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+  delay(3500); // this should be delay(200), but it is 3500 for sake of testing
 }
