@@ -90,6 +90,7 @@ void setup() {
   }
   else {
     Serial.println("failed to create harpdata.txt");
+    return;
   }
   
   
@@ -104,9 +105,6 @@ void setup() {
   if (!bmp.begin()) {
   Serial.println("Could not find a valid BMP085 sensor, check wiring!");
   while (1) {}}
-  
-  // BNO055
-  Serial.println("Orientation Sensor Test"); Serial.println("");
   
   /* Initialise the sensor */
   if(!bno.begin())
