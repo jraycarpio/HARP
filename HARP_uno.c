@@ -68,6 +68,33 @@ double altitude(double P, double P0)
 void setup() {
   
   Serial.begin(9600);
+  
+  /************* SD Card initialization ************/
+  if (SD.begin())
+  {
+    Serial.println("SD card is ready to use.");
+  }
+  else
+  {
+    Serial.println("SD card initialization failed.");
+    return;
+  }
+  
+  // Create/open file
+  hdata = SD.open("harpdata.txt", FILE_WRITE);
+  
+  // Check if file opened correctly
+  if (hdata) {
+    Serial.println("harpdata.txt created..");
+    hdata.println("__________ HARP DATA [today's date & time] _________");
+  }
+  else {
+    Serial.println("failed to create harpdata.txt");
+  }
+  
+  
+  /************ End SD card initialization ************/
+  
   // MS5803-14BA
   sensor.reset();
   sensor.begin();
