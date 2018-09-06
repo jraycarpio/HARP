@@ -147,70 +147,70 @@ void loop() {
   altitude_delta = altitude(pressure_abs , pressure_baseline);
   
   // MS5803-14BA --------------------------------------------
-  Serial.println("MS5803-14BA -------------------------------");
-  Serial.print("Temperature C = ");
-  Serial.println(temperature_c);
+  hdata.println("MS5803-14BA -------------------------------");
+  hdata.print("Temperature C = ");
+  hdata.println(temperature_c);
   
-  Serial.print("Temperature F = ");
-  Serial.println(temperature_f);
+  hdata.print("Temperature F = ");
+  hdata.println(temperature_f);
   
-  Serial.print("Pressure abs (mbar)= ");
-  Serial.println(pressure_abs);
+  hdata.print("Pressure abs (mbar)= ");
+  hdata.println(pressure_abs);
    
-  Serial.print("Pressure relative (mbar)= ");
-  Serial.println(pressure_relative); 
+  hdata.print("Pressure relative (mbar)= ");
+  hdata.println(pressure_relative); 
   
   //Serial.print("Altitude change (m) = ");
   //Serial.println(altitude_delta); 
 
-  Serial.println();
+  hdata.println();
 
   // BMP180 ---------------------------------------------------
-  Serial.println("BMP180 -------------");
-  Serial.print("Temperature = ");
-  Serial.print(bmp.readTemperature());
-  Serial.println(" *C");
+  hdata.println("BMP180 -------------");
+  hdata.print("Temperature = ");
+  hdata.print(bmp.readTemperature());
+  hdata.println(" *C");
     
-  Serial.print("Pressure = ");
-  Serial.print(bmp.readPressure());
-  Serial.println(" Pa");
+  hdata.print("Pressure = ");
+  hdata.print(bmp.readPressure());
+  hdata.println(" Pa");
     
   // Calculate altitude assuming 'standard' barometric
   // pressure of 1013.25 millibar = 101325 Pascal
-  Serial.print("Altitude = ");
-  Serial.print(bmp.readAltitude());
-  Serial.println(" meters");
+  hdata.print("Altitude = ");
+  hdata.print(bmp.readAltitude());
+  hdata.println(" meters");
 
-  Serial.print("Pressure at sealevel (calculated) = ");
-  Serial.print(bmp.readSealevelPressure());
-  Serial.println(" Pa");
+  hdata.print("Pressure at sealevel (calculated) = ");
+  hdata.print(bmp.readSealevelPressure());
+  hdata.println(" Pa");
 
   // you can get a more precise measurement of altitude
   // if you know the current sea level pressure which will
   // vary with weather and such. If it is 1015 millibars
   // that is equal to 101500 Pascals.
-  Serial.print("Real altitude = ");
-  Serial.print(bmp.readAltitude(101500));
-  Serial.println(" meters");
+  hdata.print("Real altitude = ");
+  hdata.print(bmp.readAltitude(101500));
+  hdata.println(" meters");
     
-  Serial.println();
+  hdata.println();
   
   // BNO055 ------------------------------------------------
-  Serial.println("BNO055 -------------------------");
+  hdata.println("BNO055 -------------------------");
   sensors_event_t event; 
   bno.getEvent(&event);
   
   /* Display the floating point data */
-  Serial.print("X: ");
-  Serial.print(event.orientation.x, 4);
-  Serial.print("\tY: ");
-  Serial.print(event.orientation.y, 4);
-  Serial.print("\tZ: ");
-  Serial.print(event.orientation.z, 4);
-  Serial.println("");
+  hdata.print("X: ");
+  hdata.print(event.orientation.x, 4);
+  hdata.print("\tY: ");
+  hdata.print(event.orientation.y, 4);
+  hdata.print("\tZ: ");
+  hdata.print(event.orientation.z, 4);
+  hdata.println("");
   
   //------------------------ADXL377-------------------------------------
-  Serial.println("ADXL377 -----------------------------");
+  hdata.println("ADXL377 -----------------------------");
   
   // Get raw accelerometer data for each axis
   int rawX = analogRead(A0);
@@ -234,18 +234,18 @@ void loop() {
   }
   
   // Print out raw X,Y,Z accelerometer readings
-  Serial.print("X: "); Serial.println(rawX);
-  Serial.print("Y: "); Serial.println(rawY);
-  Serial.print("Z: "); Serial.println(rawZ);
-  Serial.println();
+  hdata.print("X: "); Serial.println(rawX);
+  hdata.print("Y: "); Serial.println(rawY);
+  hdata.print("Z: "); Serial.println(rawZ);
+  hdata.println();
   
   // Print out scaled X,Y,Z accelerometer readings
-  Serial.print("X: "); Serial.print(scaledX); Serial.println(" g");
-  Serial.print("Y: "); Serial.print(scaledY); Serial.println(" g");
-  Serial.print("Z: "); Serial.print(scaledZ); Serial.println(" g");
-  Serial.println();
+  hdata.print("X: "); Serial.print(scaledX); Serial.println(" g");
+  hdata.print("Y: "); Serial.print(scaledY); Serial.println(" g");
+  hdata.print("Z: "); Serial.print(scaledZ); Serial.println(" g");
+  hdata.println();
   
-  delay(2000); // Minimum delay of 2 milliseconds between sensor reads (500 Hz)
+  delay(200); // Minimum delay of 2 milliseconds between sensor reads (500 Hz)
 }
 
 float mapf(float x, float in_min, float in_max, float out_min, float out_max)
